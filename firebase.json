@@ -1,0 +1,16 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "DEPLOY.md",
+      "README.md",
+      "data/**"
+    ],
+    "rewrites": []
+  }
+}
+
+

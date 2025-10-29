@@ -1,0 +1,46 @@
+{
+  "knowledge_base": "Product Information",
+  "company": {
+    "name": "Sample Tech Co",
+    "founded": "2024",
+    "industry": "Software Development"
+  },
+  "products": [
+    {
+      "name": "Widget Pro",
+      "version": "2.1",
+      "price": "$99/month",
+      "features": ["Cloud sync", "Real-time collaboration", "API access"],
+      "target_audience": "Small to medium businesses"
+    },
+    {
+      "name": "Widget Enterprise",
+      "version": "3.0",
+      "price": "Contact sales",
+      "features": ["Advanced security", "Custom integrations", "Dedicated support", "SLA guarantee"],
+      "target_audience": "Large enterprises"
+    }
+  ],
+  "faq": [
+    {
+      "question": "What payment methods do you accept?",
+      "answer": "We accept all major credit cards, PayPal, and bank transfers for enterprise customers."
+    },
+    {
+      "question": "Is there a free trial?",
+      "answer": "Yes, all plans include a 14-day free trial with no credit card required."
+    },
+    {
+      "question": "Can I cancel anytime?",
+      "answer": "Absolutely. You can cancel your subscription at any time with no penalties."
+    }
+  ],
+  "support": {
+    "email": "support@example.com",
+    "hours": "24/7",
+    "response_time": "Under 2 hours for premium customers"
+  },
+  "usage_note": "This is a sample knowledge base. Replace this data with your own product info, documentation, or any structured data you want the AI to reference."
+}
+
+

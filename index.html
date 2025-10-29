@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fusion Studio</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <header class="header">
+        <h1>Fusion Studio</h1>
+        <div id="activeChatName">
+            <div class="chat-name-container">
+                <div class="stack-icon">0</div>
+                <span id="chatNameDisplay">No chat selected</span>
+            </div>
+            <select id="modelSelect" class="model-select">
+                <option value="">Select Model</option>
+                <option value="deepseek/deepseek-v3.1-terminus">deepseek/deepseek-v3.1-terminus</option>
+                <option value="qwen/qwen3-235b-a22b-2507">qwen/qwen3-235b-a22b-2507</option>
+                <option value="qwen/qwen3-235b-a22b-thinking-2507">qwen/qwen3-235b-a22b-thinking-2507</option>
+                <option value="inclusionai/ling-1t">inclusionai/ling-1t</option>
+                <option value="inclusionai/ring-1t">inclusionai/ring-1t</option>
+                <option value="moonshotai/kimi-k2-0905">moonshotai/kimi-k2-0905</option>
+                <option value="__add__" class="add-model-option">+ Add Model</option>
+            </select>
+        </div>
+        <div class="header-right">
+            <button id="viewPromptButton">Prompt</button>
+            <button id="viewFilesButton">Files</button>
+            <button id="viewReadmeButton">README</button>
+        </div>
+    </header>
+    
+    <div class="main-container">
+        <div class="left-panel">
+            <div class="chat-list">
+                <button class="chat-slot" id="chat-slot-0">1. Empty...</button>
+                <button class="chat-slot" id="chat-slot-1">2. Empty...</button>
+                <button class="chat-slot" id="chat-slot-2">3. Empty...</button>
+                <button class="chat-slot" id="chat-slot-3">4. Empty...</button>
+                <button class="chat-slot" id="chat-slot-4">5. Empty...</button>
+                <button class="chat-slot" id="chat-slot-5">6. Empty...</button>
+                <button class="chat-slot" id="chat-slot-6">7. Empty...</button>
+                <button class="chat-slot" id="chat-slot-7">8. Empty...</button>
+                <button class="chat-slot" id="chat-slot-8">9. Empty...</button>
+                <button class="chat-slot" id="chat-slot-9">10. Empty...</button>
+            </div>
+            <button id="clearAllButton" class="clear-all-button">Clear All</button>
+        </div>
+        
+        <div class="middle-panel">
+            <div class="middle-content">
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Chat messages will appear here -->
+                </div>
+            </div>
+            <div class="input-container">
+                <textarea id="messageInput" placeholder="Type a message..."></textarea>
+            </div>
+            <div class="input-footer">
+                <input type="file" accept=".json,.md" id="fileInput" style="display: none;">
+                <span id="activeFile">No file loaded</span>
+                <div class="footer-buttons">
+                    <button id="addJsonButton">Add File</button>
+                    <button id="apiKeyButton">API Key</button>
+                    <button id="sendButton">Send</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="right-panel">
+            <div class="right-content">
+                <div class="prompt-header">
+                    <input type="file" accept=".md" id="promptInput" style="display: none;">
+                    <button id="addPromptButton">Add Prompt</button>
+                </div>
+                <textarea id="promptText" placeholder="Load a prompt to begin..."></textarea>
+            </div>
+            <div id="fileViewerPane" class="file-viewer-pane is-hidden">
+                <h2 id="fileViewerTitle" class="file-viewer-title"></h2>
+                <pre id="fileViewerContent" class="file-viewer-content"></pre>
+            </div>
+            <div id="filesModal" class="files-modal is-hidden">
+                <h2 class="files-title">Files Library</h2>
+                <div id="filesContent" class="files-content">
+                    <!-- Files list will be populated by JS -->
+                </div>
+            </div>
+            <div id="readmeModal" class="readme-modal">
+                <h2 class="readme-title">READ ME</h2>
+                <div id="readmeContent" class="readme-content">
+                    <h1>Fusion Studio</h1>
+                    <p>A lightweight chat interface for OpenRouter AI models. Manage up to 10 concurrent chat threads, load custom prompts, and integrate JSON data seamlessly.</p>
+                    
+                    <hr>
+                    
+                    <h2>Getting Started</h2>
+                    
+                    <h3>How to Get an API Key from OpenRouter</h3>
+                    <ol>
+                        <li>Visit <a href="https://openrouter.ai/" target="_blank">OpenRouter.ai</a></li>
+                        <li>Sign up or log in to your account</li>
+                        <li>Navigate to your <strong>Dashboard</strong> or <strong>API Keys</strong> section</li>
+                        <li>Click <strong>Create API Key</strong></li>
+                        <li>Give your key a name (e.g., "Fusion Studio")</li>
+                        <li>Copy your new API key (it will look something like <code>sk-or-v1-...</code>)</li>
+                        <li>Keep this key safe! You'll need it to use Fusion Studio</li>
+                    </ol>
+                    <p><strong>Note:</strong> OpenRouter requires credits to use. Make sure your account has a balance before making API calls.</p>
+                    
+                    <hr>
+                    
+                    <h3>Setting Your API Key</h3>
+                    <ol>
+                        <li>Open Fusion Studio in your browser</li>
+                        <li>Click the <strong>API Key</strong> button in the bottom-right corner</li>
+                        <li>Paste your OpenRouter API key into the prompt</li>
+                        <li>Click <strong>OK</strong> or press Enter</li>
+                    </ol>
+                    <p>Your API key is saved locally in your browser and will persist between sessions. You won't need to re-enter it unless you clear your browser data.</p>
+                    
+                    <hr>
+                    
+                    <h3>Starting a Thread</h3>
+                    <p>Fusion Studio gives you <strong>10 chat slots</strong> so you can run multiple conversations at once.</p>
+                    
+                    <p><strong>To start a new thread:</strong></p>
+                    <ol>
+                        <li>Look at the <strong>left panel</strong> with numbered slots (1–10)</li>
+                        <li>Click any slot that says <strong>"Empty..."</strong></li>
+                        <li>A prompt will appear asking you to <strong>name your chat</strong></li>
+                        <li>Type a name and click <strong>OK</strong></li>
+                        <li>The slot will now show your chat name</li>
+                    </ol>
+                    
+                    <p><strong>To switch between threads:</strong></p>
+                    <ul>
+                        <li>Click any chat slot to switch to that conversation</li>
+                        <li>The active chat name appears at the top of the screen</li>
+                    </ul>
+                    
+                    <p><strong>To manage a thread:</strong></p>
+                    <ul>
+                        <li><strong>Right-click</strong> on any chat slot to open the context menu</li>
+                        <li>Choose from:
+                            <ul>
+                                <li><strong>Rename</strong> – Change the chat name</li>
+                                <li><strong>Export Chat</strong> – Download the conversation as JSON</li>
+                                <li><strong>Clear Data</strong> – Delete the chat and start fresh</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    
+                    <hr>
+                    
+                    <h3>Setting and Saving a Prompt</h3>
+                    <p>The <strong>right panel</strong> is your prompt area. This is where you load a system prompt that tells the AI how to behave.</p>
+                    
+                    <p><strong>To load a prompt:</strong></p>
+                    <ol>
+                        <li>Click the <strong>Add Prompt</strong> button in the bottom-right corner</li>
+                        <li>Select a <code>.md</code> (Markdown) file from your computer</li>
+                        <li>The file contents will appear in the prompt text area</li>
+                    </ol>
+                    
+                    <p><strong>To edit the prompt:</strong></p>
+                    <ul>
+                        <li>Click inside the prompt text area and type directly</li>
+                        <li>Changes save automatically</li>
+                        <li>This prompt applies to the <strong>currently active chat</strong></li>
+                    </ul>
+                    
+                    <p><strong>Why use prompts?</strong><br>
+                    Prompts give the AI personality, instructions, or context. For example:</p>
+                    <ul>
+                        <li>"You are a helpful coding assistant."</li>
+                        <li>"Answer all questions in pirate speak."</li>
+                        <li>"You are an expert in JavaScript debugging."</li>
+                    </ul>
+                    
+                    <hr>
+                    
+                    <h3>Adding Reference Files (JSON or Markdown)</h3>
+                    <p>Fusion Studio lets you attach JSON or Markdown files to your messages. This is useful for feeding data into the AI or providing additional context.</p>
+                    
+                    <p><strong>To add a file:</strong></p>
+                    <ol>
+                        <li>Click the <strong>Add File</strong> button in the bottom-left corner (next to "No file loaded")</li>
+                        <li>Select a <code>.json</code> or <code>.md</code> file from your computer</li>
+                        <li>The filename will appear where it said "No file loaded"</li>
+                        <li>Type your message in the text area</li>
+                        <li>Click <strong>Send</strong></li>
+                    </ol>
+                    
+                    <p><strong>What happens:</strong></p>
+                    <ul>
+                        <li>The file contents are included with every message you send</li>
+                        <li>JSON files are formatted as structured data</li>
+                        <li>Markdown files are included as plain text</li>
+                        <li>The AI can read and reference the data in its responses</li>
+                        <li>The file stays loaded until you remove it or load a different file</li>
+                    </ul>
+                    
+                    <p><strong>To remove a file:</strong></p>
+                    <ul>
+                        <li>Click the <strong>Remove File</strong> button (appears when a file is loaded)</li>
+                        <li>Confirm the removal when prompted</li>
+                    </ul>
+                    
+                    <hr>
+                    
+                    <h3>Exporting Thread Data</h3>
+                    <p>You can export any chat thread as a JSON file to save your conversation history.</p>
+                    
+                    <p><strong>To export a thread:</strong></p>
+                    <ol>
+                        <li><strong>Right-click</strong> on the chat slot you want to export</li>
+                        <li>Select <strong>Export Chat</strong> from the context menu</li>
+                        <li>A JSON file will download to your computer</li>
+                    </ol>
+                    
+                    <p><strong>What's in the export?</strong><br>
+                    The JSON file contains:</p>
+                    <ul>
+                        <li>Chat name</li>
+                        <li>Selected model</li>
+                        <li>Full conversation history (all messages and responses)</li>
+                        <li>Timestamp of export</li>
+                    </ul>
+                    
+                    <p><strong>Why export?</strong></p>
+                    <ul>
+                        <li>Backup important conversations</li>
+                        <li>Share conversations with others</li>
+                        <li>Analyze chat data programmatically</li>
+                        <li>Import into other tools</li>
+                    </ul>
+                    
+                    <hr>
+                    
+                    <h2>Additional Features</h2>
+                    
+                    <h3>Model Selection</h3>
+                    <p>Choose from multiple AI models using the dropdown next to the chat name:</p>
+                    <ul>
+                        <li>DeepSeek models</li>
+                        <li>Qwen models</li>
+                        <li>Inclusion AI models</li>
+                        <li>Moonshot AI models</li>
+                        <li><strong>+ Add Model</strong> to add custom models</li>
+                    </ul>
+                    
+                    <h3>View Buttons</h3>
+                    <ul>
+                        <li><strong>View README</strong> – See this documentation (you're reading it!)</li>
+                        <li><strong>View Prompt</strong> – Preview the active prompt</li>
+                        <li><strong>View Payload</strong> – See the raw API request data</li>
+                    </ul>
+                    
+                    <h3>Clear All</h3>
+                    <p>The <strong>Clear All</strong> button at the bottom of the left panel deletes all 10 chat threads at once. Use with caution!</p>
+                    
+                    <hr>
+                    
+                    <h2>Tips & Tricks</h2>
+                    <ul>
+                        <li><strong>Organize your chats:</strong> Use descriptive names like "Debug Session" or "Brainstorm Ideas"</li>
+                        <li><strong>Save your prompts:</strong> Keep useful prompts in <code>.md</code> files for quick loading</li>
+                        <li><strong>Check your payload:</strong> If messages aren't working, click "View Payload" to see what's being sent</li>
+                        <li><strong>Export frequently:</strong> Back up important conversations before they get too long</li>
+                    </ul>
+                    
+                    <hr>
+                    
+                    <h2>Troubleshooting</h2>
+                    
+                    <p><strong>API calls aren't working:</strong></p>
+                    <ul>
+                        <li>Make sure your API key is set correctly</li>
+                        <li>Check that your OpenRouter account has credits</li>
+                        <li>Verify you have internet connection</li>
+                    </ul>
+                    
+                    <p><strong>Chat slots aren't saving:</strong></p>
+                    <ul>
+                        <li>Make sure you're not in incognito/private browsing mode</li>
+                        <li>Check if your browser allows local storage</li>
+                    </ul>
+                    
+                    <p><strong>File won't load:</strong></p>
+                    <ul>
+                        <li>For JSON files: ensure the file is valid JSON (use a validator like jsonlint.com)</li>
+                        <li>Make sure the file extension is <code>.json</code> or <code>.md</code></li>
+                        <li>Check that the file isn't empty or corrupted</li>
+                    </ul>
+                    
+                    <hr>
+                    
+                    <h2>About Fusion Studio</h2>
+                    <p>Fusion Studio is a browser-based chat client built for power users who need:</p>
+                    <ul>
+                        <li>Multiple parallel conversations</li>
+                        <li>Custom system prompts</li>
+                        <li>JSON and Markdown data integration</li>
+                        <li>Full conversation exports</li>
+                    </ul>
+                    <p>Built with vanilla HTML, CSS, and JavaScript. No frameworks, no bloat.</p>
+                    
+                    <hr>
+                    
+                    <p>Enjoy chatting! 🚀</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="contextMenu" class="context-menu">
+        <div class="context-menu-item" id="renameOption">Rename</div>
+        <div class="context-menu-item" id="exportOption">Export Chat</div>
+        <div class="context-menu-item" id="clearDataOption">Clear Data</div>
+    </div>
+    
+    <div id="userBubbleMenu" class="context-menu">
+        <div class="context-menu-item" id="regenerateOption">Regenerate</div>
+        <div class="context-menu-item" id="deleteOption">Delete</div>
+        <div class="context-menu-item" id="editOption">Edit</div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
+

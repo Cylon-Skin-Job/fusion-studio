@@ -1,0 +1,25 @@
+{
+  "context": "Sample Context Document",
+  "description": "This is a sample JSON file to demonstrate how to provide context to the AI",
+  "project": {
+    "name": "Fusion Studio",
+    "type": "AI Chat Application",
+    "purpose": "A client-side chat interface for OpenRouter AI models"
+  },
+  "features": [
+    "Multiple chat threads with persistent storage",
+    "Custom system prompts per thread",
+    "JSON context files for additional data",
+    "Markdown rendering in responses",
+    "Reasoning trace display",
+    "Message regeneration"
+  ],
+  "technical_stack": {
+    "frontend": "HTML, CSS, JavaScript",
+    "storage": "Browser localStorage",
+    "api": "OpenRouter.ai",
+    "markdown": "Marked.js"
+  },
+  "notes": "You can add any structured data here that you want the AI to have access to during conversations. This could include project specs, reference data, documentation, or any other context."
+}
+
