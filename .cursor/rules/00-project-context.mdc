@@ -1,0 +1,229 @@
+---
+alwaysApply: true
+---
+
+# Fusion Studio Project Context
+
+**ALWAYS load this first - foundational project information**
+
+---
+
+## 🎯 Project Overview
+
+**Name:** Fusion Studio  
+**Description:** A lightweight chat interface for testing AI prompts, building AI scripts, and comparing behavior across different OpenRouter models  
+**Vibe:** Clean, functional, privacy-first. No backend, no tracking, pure client-side experimentation
+
+---
+
+## 🚀 Current Status
+
+**Stage:** Production (deployed on Firebase Hosting)  
+**Environment:** Static site - runs entirely in browser  
+**Users:** Public - anyone can use via dashtube.ai (27 subdomains for 270 total thread slots)  
+**Testing:** Manual testing, live deployment
+
+---
+
+## 🏗️ Tech Stack
+
+### Frontend
+- **Vanilla HTML/CSS/JavaScript** - No frameworks, no build step
+- **marked.js** - Markdown rendering (loaded from CDN)
+- **localStorage** - All data stored client-side in browser
+- **OpenRouter API** - AI model inference via direct API calls
+
+### Backend
+- **None!** - 100% client-side application
+- **API:** OpenRouter.ai for AI model access
+- **Storage:** Browser localStorage only
+
+### Database
+- **None!** - All state stored in `localStorage`
+- **Format:** JSON serialized objects
+- **Keys:** `chats`, `models`, etc.
+
+### Authentication
+- **User API Keys** - Users provide their own OpenRouter API keys
+- **Storage:** API key stored in localStorage (user responsible for key security)
+- **No server-side auth** - completely privacy-focused
+
+### Hosting/Deployment
+- **Firebase Hosting** - Static file serving
+- **Multi-domain setup:** 27 subdomains (dashtube.ai + a-z.dashtube.ai)
+- **Deployment:** `firebase deploy` (see DEPLOY.md)
+
+---
+
+## 📦 What's Working
+
+✅ **Core Features:**
+- 10 concurrent chat threads per subdomain
+- Custom system prompts (load from .md files)
+- JSON file attachments (feed data into conversations)
+- Model selection dropdown (pre-configured + custom model IDs)
+- Markdown rendering in AI responses
+- Reasoning display for models that support it (e.g., DeepSeek)
+
+✅ **Thread Management:**
+- Create, rename, export, clear threads
+- Right-click context menus for threads and messages
+- Message editing, regeneration, deletion
+- Complete conversation exports as JSON
+
+✅ **Privacy:**
+- 100% client-side - no server, no logging, no tracking
+- API keys never leave the user's browser
+- Threads stored only in localStorage
+
+✅ **Multi-domain Setup:**
+- 27 subdomains = 270 total thread slots
+- Each subdomain has isolated localStorage
+- Single deployment updates all domains
+
+---
+
+## 🚧 In Progress
+
+⚠️ **Future Features:**
+- Lots planned, will tackle later
+
+---
+
+## 📐 Architecture Patterns
+
+### File Structure
+```
+fusion-studio/
+├── index.html          # Main app structure
+├── app.js              # All application logic (1838 lines)
+├── style.css           # All styles (single file)
+├── README.md           # User documentation
+├── data/               # Sample files for testing
+├── images/             # Screenshots for docs
+├── firebase.json       # Hosting config
+├── DEPLOY.md           # Deployment instructions
+└── MULTI-DOMAIN-SETUP.md  # Multi-subdomain setup guide
+```
+
+### State Management
+- **Pattern:** Global variables + localStorage persistence
+- **State stored in app.js:**
+  - `chatHistory[]` - All chat threads
+  - `activeChatSlot` - Currently selected thread
+  - `currentFile` - Currently loaded JSON file
+  - `currentPrompt` - Active system prompt
+  - `modelList[]` - Available AI models
+- **Persistence:** Auto-saves to localStorage on state changes
+- **No mutation tracking** - direct object updates + manual save calls
+
+### API Communication
+- **Direct fetch() calls** to OpenRouter
+- **Streaming responses** parsed line-by-line
+- **Error handling:** Try/catch with user-facing error messages
+- **Rate limits:** User responsibility (OpenRouter account limits)
+
+---
+
+## 🎨 UI/UX Philosophy
+
+- **Desktop-first:** Optimized for desktop AI prompt experimentation
+- **Mobile:** Not yet implemented (planned for future)
+- **Clean interface:** Minimalist, functional design
+- **No distractions:** No ads, no tracking, no bloat
+- **Performance:** Instant load (pure HTML/CSS/JS, no build step)
+
+---
+
+## 📚 Documentation & Source of Truth
+
+**Primary Source:** `README.md` (comprehensive user guide)
+
+### Key Documentation Files
+- **README.md** - Complete user manual (setup, features, troubleshooting)
+- **DEPLOY.md** - Firebase hosting deployment instructions
+- **MULTI-DOMAIN-SETUP.md** - 27-subdomain setup guide
+- **Styleguide-mobile.md** - Mobile-specific UI patterns
+- **data/** - Sample JSON files for testing file attachments
+
+---
+
+## 🔐 Secrets & Config
+
+### Required Secrets
+- **OpenRouter API Key** - User-provided, stored in localStorage
+- **No server secrets** - no backend means no API keys to manage!
+
+### User API Key Handling
+**Storage:**
+- Stored in browser `localStorage` under key `apiKey`
+- Never transmitted except to OpenRouter API
+- User responsible for key security
+
+**Security Warning:**
+- Users warned to revoke keys if laptop lost/stolen
+- Recommend setting spend limits on OpenRouter account
+
+---
+
+## 👤 User Context
+
+**Owner/Developer:** RC  
+**Role:** Developer learning frontend  
+**Experience Level:**
+- ✅ HTML/CSS (knows the basics)
+- ✅ Light vanilla JavaScript (comfortable with simple scripts)
+- ⚠️ Frontend (noob, no prior experience)
+- ⚠️ Backend (no prior experience)
+
+**Communication Style:**
+- Plain English, beginner-friendly language
+- Surfer vibes (call RC "bro" or "dude")
+- Avoid jargon unless defined
+- Provide code only when explicitly asked
+- Assume RC knows HTML/CSS but keep JS explanations simple
+
+**Assistant Persona:** Jason - chill California beach bum co-engineer
+
+---
+
+## 📋 Coding Conventions
+
+**Follow desloppify style guides:**
+- `01-html-conventions.mdc` - kebab-case IDs/classes, semantic HTML
+- `02-css-conventions.mdc` - CSS custom properties, no hardcoded colors
+- `03-javascript-naming.mdc` - camelCase for JS variables/functions
+- `88-cursor-rule-syntax.mdc` - How to write cursor rules
+
+**Key patterns observed:**
+- **HTML IDs:** `kebab-case` (e.g., `active-file`, `chat-slot-0`)
+- **CSS classes:** `kebab-case` (e.g., `.chat-slot`, `.user-message`)
+- **JavaScript:** `camelCase` (e.g., `activeChatSlot`, `chatHistory`)
+- **Functions:** Descriptive names (e.g., `loadActiveChat()`, `sendMessage()`)
+
+---
+
+## 🎯 Common Questions - Quick Answers
+
+**Q: What backend are you using?**  
+A: None! This is a 100% client-side app. All data stored in browser localStorage. OpenRouter API is the only external service.
+
+**Q: Is this multi-user?**  
+A: No - each user's data is isolated to their own browser. No user accounts, no shared state.
+
+**Q: What's the database?**  
+A: Browser `localStorage`. All chat threads, prompts, and settings stored as JSON in the user's browser.
+
+**Q: What environment are we in?**  
+A: Production. Deployed on Firebase Hosting at dashtube.ai (+ 26 subdomains). No staging environment.
+
+**Q: What's working?**  
+A: Everything! 10 chat threads, custom prompts, JSON attachments, model selection, markdown rendering, thread exports, multi-domain setup.
+
+**Q: Where's the code?**  
+A: Single-file architecture: `app.js` (all logic), `style.css` (all styles), `index.html` (structure). No build step, no modules.
+
+---
+
+**TL;DR:** Privacy-first AI chat interface for prompt experimentation. Pure vanilla HTML/CSS/JS, no backend, no tracking. Uses OpenRouter API with user-provided keys. 100% client-side state in localStorage. Deployed on Firebase Hosting with 27-subdomain setup (270 total threads). RC is learning frontend, prefers plain English and surfer vibes.
+
