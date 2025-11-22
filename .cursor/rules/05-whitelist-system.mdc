@@ -1,0 +1,449 @@
+---
+globs: ["**/*.js", "**/*.mjs"]
+alwaysApply: false
+---
+
+# Validation Whitelist System
+
+**Philosophy:** Track known violations with drift detection instead of silently skipping validation.
+
+**When to load this rule:** Only when working with validation exceptions, technical debt, or legacy code that intentionally breaks validation rules.
+
+---
+
+## 🎯 What is the Whitelist System?
+
+The whitelist system allows you to **acknowledge and track** validation violations you're deferring fixing, while detecting if the code changes later.
+
+### Use Cases
+
+✅ **Good reasons to whitelist:**
+- Legacy code that works but doesn't meet current standards
+- Technical debt you're tracking with a GitHub issue
+- Planned refactors (documented with timeline)
+- Known edge cases you're monitoring
+
+❌ **Bad reasons to whitelist:**
+- "I don't want to fix this" (without reason)
+- Hiding new bugs
+- Avoiding writing proper contracts
+
+---
+
+## 📋 The Two-Way Contract System
+
+Whitelisting requires **both sides** of the contract to be documented:
+
+1. **Consumer** - The risky code that breaks validation rules
+2. **Provider** - The dependency that makes it safe
+
+Both get special comment annotations that reference each other.
+
+---
+
+## 🔧 How to Whitelist a Violation
+
+### Step 1: Add Consumer Comment (at risky code)
+
+```javascript
+// @validation-ignore <category>
+// @reason: <why is this safe?>
+// @dependency: <function-name> at line <N> [in <file>]
+// @whitelist-id: <id>
+const riskyCode = something.property;
+```
+
+**Example:**
+```javascript
+// @validation-ignore null-access
+// @reason: thread guaranteed non-null by initThreads()
+// @dependency: initThreads at line 15
+// @whitelist-id: null-access-001
+const threadName = thread.name;  // Line 42 - could be null without initThreads!
+```
+
+### Step 2: Add Provider Comment (at dependency)
+
+```javascript
+// @validation-dependency <whitelist-id>
+// @required-by: line <N> (<description>)
+// @contract: <what does this guarantee?>
+function providerFunction() {
+  // ... code that guarantees safety
+}
+```
+
+**Example:**
+```javascript
+// @validation-dependency null-access-001
+// @required-by: line 42 (assumes non-null return)
+// @contract: MUST filter out null/undefined threads
+function initThreads() {
+  threads = threads.filter(t => t !== null && t !== undefined);
+  return threads;
+}
+```
+
+---
+
+## 🗂️ Whitelist Categories
+
+Common validation categories you can whitelist:
+
+| Category | When to Use | Example |
+|----------|-------------|---------|
+| `null-access` | Accessing property that could be null | `user.name` without null check |
+| `missing-await` | Async function called without await | `fetchData()` not awaited |
+| `data-shape` | Assuming object structure | `response.data.user` without validation |
+| `memory-leak` | Event listener not cleaned up | `addEventListener` without `removeEventListener` |
+| `security` | Risky pattern that's actually safe | `innerHTML` with sanitized content |
+
+---
+
+## 📊 Whitelist JSON Structure
+
+The whitelist is stored in `scripts/validation-whitelist.json`:
+
+```json
+{
+  "version": "1.0",
+  "lastUpdated": "2025-11-04",
+  "frameworks": {
+    "express": {
+      "enabled": true,
+      "pattern": {
+        "description": "Express middleware pattern",
+        "signatures": ["(req, res, next)", "(req, res)"]
+      }
+    }
+  },
+  "entries": [
+    {
+      "id": "null-access-001",
+      "category": "null-access",
+      "file": "thread-manager.js",
+      "line": 42,
+      "codeBlock": "const threadName = thread.name;",
+      "comment": {
+        "reason": "thread guaranteed non-null by initThreads()",
+        "whitelistedDate": "2025-11-04"
+      },
+      "dependencies": [
+        {
+          "function": "initThreads",
+          "line": 15,
+          "file": "thread-manager.js",
+          "codeSnapshot": "function initThreads() {...}"
+        }
+      ],
+      "validated": true,
+      "lastValidated": "2025-11-04"
+    }
+  ]
+}
+```
+
+---
+
+## 🔍 Drift Detection
+
+The whitelist system **tracks code snapshots** and detects when whitelisted code changes.
+
+### What Gets Checked
+
+1. **Consumer code drift** - Did the risky line change?
+2. **Provider code drift** - Did the dependency function change?
+3. **Consumer comment exists** - Is `@validation-ignore` still there?
+4. **Provider comment exists** - Is `@validation-dependency` still there?
+
+### Drift Warning Example
+
+```
+🟨 WHITELIST DRIFT: null-access-001
+
+❌ VALIDATION FAILED: null-access-001
+   thread-manager.js:42
+
+   🚨 CODE_DRIFT: Code changed at thread-manager.js:42
+      Expected: const threadName = thread.name;
+      Actual:   const threadName = thread?.name;  // Code changed!
+
+   🚨 DEPENDENCY_DRIFT: Dependency code changed at thread-manager.js:15
+      Reason: Dependency code changed
+```
+
+**What to do when you see drift:**
+1. Review the changes
+2. Verify the contract still holds
+3. Update the whitelist entry with new code snapshot
+4. OR fix the underlying issue and remove from whitelist
+
+---
+
+## 🛠️ Whitelist Operations
+
+### Check Whitelist Status
+
+Validators automatically check the whitelist when they find violations.
+
+### Add to Whitelist
+
+1. Write the consumer comment (`@validation-ignore`)
+2. Write the provider comment (`@validation-dependency`)
+3. Run validation - it will auto-generate the whitelist entry
+
+### Remove from Whitelist
+
+1. Fix the underlying issue
+2. Remove both consumer and provider comments
+3. Delete entry from `validation-whitelist.json`
+
+### View Whitelist Report
+
+```bash
+node scripts/docs-check.js
+```
+
+Output shows:
+- 🔴 New violations (not whitelisted)
+- 🟨 Whitelist drift (code changed)
+- ✅ Whitelisted (validated, no drift)
+
+---
+
+## 🎯 Complete Example
+
+```javascript
+// ============================================================================
+// CONSUMER: thread-manager.js
+// ============================================================================
+
+// Global state
+let threads = [];
+
+function displayThreadName(threadId) {
+  const thread = threads.find(t => t.id === threadId);
+  
+  // @validation-ignore null-access
+  // @reason: thread guaranteed non-null by initThreads() + createThread()
+  // @dependency: initThreads at line 15
+  // @dependency: createThread at line 25
+  // @whitelist-id: null-access-001
+  const name = thread.name;  // Line 42 - could be null without guarantees!
+  
+  document.getElementById('thread-name').textContent = name;
+}
+
+// ============================================================================
+// PROVIDER 1: initThreads
+// ============================================================================
+
+// @validation-dependency null-access-001
+// @required-by: line 42 (assumes non-null thread in array)
+// @contract: MUST filter out null/undefined threads before storing
+function initThreads() {  // Line 15
+  const raw = localStorage.getItem('threads');
+  threads = JSON.parse(raw || '[]');
+  
+  // Filter out nulls - THIS IS THE GUARANTEE
+  threads = threads.filter(t => t !== null && t !== undefined);
+}
+
+// ============================================================================
+// PROVIDER 2: createThread
+// ============================================================================
+
+// @validation-dependency null-access-001
+// @required-by: line 42 (assumes thread.name is never null)
+// @contract: MUST set name to non-null string (empty string is ok)
+function createThread(name) {  // Line 25
+  const thread = {
+    id: Date.now(),
+    name: name || 'Untitled',  // THIS IS THE GUARANTEE
+    messages: []
+  };
+  threads.push(thread);
+  return thread;
+}
+```
+
+**What this example shows:**
+- One consumer with 2 dependencies
+- Each provider documents their contract
+- Drift detection will catch if ANY of these 3 functions change
+- If `initThreads()` removes the null filter → DRIFT WARNING
+- If `createThread()` allows null names → DRIFT WARNING
+- If `displayThreadName()` changes the risky line → DRIFT WARNING
+
+---
+
+## 📋 Framework Whitelisting
+
+Some patterns are framework-specific and safe to whitelist globally.
+
+### Example: Express Middleware
+
+```javascript
+// Express middleware signature is (req, res, next)
+// This is safe - Express guarantees these exist
+function loggingMiddleware(req, res, next) {
+  console.log(req.method, req.url);  // Safe - Express guarantees req exists
+  next();
+}
+```
+
+Add to `validation-whitelist.json`:
+```json
+{
+  "frameworks": {
+    "express": {
+      "enabled": true,
+      "verifiedDate": "2025-11-04",
+      "pattern": {
+        "description": "Express middleware pattern",
+        "signatures": ["(req, res, next)", "(req, res)", "(err, req, res, next)"]
+      },
+      "stats": {
+        "functionsMatched": 47,
+        "filesAffected": ["middleware/logging.js", "routes/api.js"]
+      }
+    }
+  }
+}
+```
+
+**Validators will skip these patterns** when Express framework is whitelisted.
+
+---
+
+## ⚠️ Whitelist Best Practices
+
+### DO:
+✅ Document WHY code is whitelisted  
+✅ Link to GitHub issues for tracking  
+✅ Set expected fix dates  
+✅ Review whitelist drift warnings  
+✅ Clean up old whitelist entries when fixed  
+✅ Use whitelist for TEMPORARY exceptions  
+
+### DON'T:
+❌ Whitelist without explanation  
+❌ Whitelist new code (fix it instead!)  
+❌ Ignore drift warnings  
+❌ Let whitelist grow indefinitely  
+❌ Use whitelist as permanent solution  
+❌ Whitelist security issues  
+
+---
+
+## 🔧 Whitelist Commands
+
+### Manual Whitelist Management
+
+```javascript
+import whitelistManager from './desloppify/scripts/whitelist-manager.mjs';
+
+// Load whitelist
+const whitelist = whitelistManager.loadWhitelist();
+
+// Check if entry exists
+const entry = whitelistManager.getWhitelistEntry(whitelist, 'null-access-001');
+
+// Validate entry (checks drift)
+const validation = whitelistManager.validateWhitelistEntry(entry);
+
+if (!validation.valid) {
+  console.log(whitelistManager.formatValidationErrors(entry, validation));
+}
+
+// Add entry
+whitelistManager.addWhitelistEntry(whitelist, {
+  category: 'null-access',
+  file: 'app.js',
+  line: 123,
+  codeBlock: 'const x = obj.prop;',
+  comment: {
+    reason: 'obj guaranteed non-null by init()'
+  },
+  dependencies: [
+    {
+      function: 'init',
+      line: 10,
+      file: 'app.js'
+    }
+  ]
+});
+
+// Save whitelist
+whitelistManager.saveWhitelist(whitelist);
+```
+
+---
+
+## 📊 Validation Output with Whitelist
+
+```
+🔎 Project Docs Check
+
+✔️  Function calls validation
+
+❌ Null/undefined access check failed
+
+  🔴 NEW VIOLATIONS (3):
+
+    app.js:156 - user.name without null check
+    app.js:289 - thread.messages without validation
+    api.js:42 - response.data.id assumed to exist
+
+  🟨 WHITELIST DRIFT (1):
+
+    🟨 WHITELIST DRIFT: null-access-001
+       thread-manager.js:42
+       
+       🚨 CODE_DRIFT: Code changed at thread-manager.js:42
+          Expected: const threadName = thread.name;
+          Actual:   const threadName = thread?.name;
+
+  ✅ Whitelisted: 5 issue(s)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 VALIDATION COMPLETION REPORT
+
+Summary:
+   🔴 New violations: 3
+   🟨 Whitelist drift: 1
+   ✅ Whitelisted: 5
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+---
+
+## 🎯 Quick Reference
+
+### Consumer Comment Template
+
+```javascript
+// @validation-ignore <category>
+// @reason: <why safe?>
+// @dependency: <function> at line <N> [in <file>]
+// @whitelist-id: <id>
+```
+
+### Provider Comment Template
+
+```javascript
+// @validation-dependency <whitelist-id>
+// @required-by: line <N> (<description>)
+// @contract: <what does this guarantee?>
+```
+
+### Categories
+- `null-access` - Null pointer access
+- `missing-await` - Async without await
+- `data-shape` - Assumed object structure
+- `memory-leak` - Event listeners not cleaned
+- `security` - Risky patterns
+
+---
+
+**Remember:** Whitelist is for TRACKING technical debt, not hiding it. Every whitelisted violation should have a plan to fix it!

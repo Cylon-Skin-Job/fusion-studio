@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fusion Studio - README</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px 50px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #222;
+            border-bottom: 3px solid #4a90e2;
+            padding-bottom: 10px;
+        }
+        
+        h2 {
+            font-size: 28px;
+            margin-top: 40px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        h3 {
+            font-size: 22px;
+            margin-top: 30px;
+            margin-bottom: 12px;
+            color: #444;
+        }
+        
+        p {
+            margin-bottom: 15px;
+        }
+        
+        ul, ol {
+            margin-left: 30px;
+            margin-bottom: 15px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        code {
+            background-color: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        strong {
+            font-weight: 600;
+            color: #222;
+        }
+        
+        a {
+            color: #4a90e2;
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        hr {
+            border: none;
+            border-top: 1px solid #ddd;
+            margin: 30px 0;
+        }
+        
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 20px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fusion Studio</h1>
+        <p>A lightweight chat interface for OpenRouter AI models. Manage up to 10 concurrent chat threads, load custom prompts, and integrate JSON data seamlessly.</p>
+        
+        <hr>
+        
+        <h2>Getting Started</h2>
+        
+        <h3>How to Get an API Key from OpenRouter</h3>
+        <ol>
+            <li>Visit <a href="https://openrouter.ai/" target="_blank">OpenRouter.ai</a></li>
+            <li>Sign up or log in to your account</li>
+            <li>Navigate to your <strong>Dashboard</strong> or <strong>API Keys</strong> section</li>
+            <li>Click <strong>Create API Key</strong></li>
+            <li>Give your key a name (e.g., "Fusion Studio")</li>
+            <li>Copy your new API key (it will look something like <code>sk-or-v1-...</code>)</li>
+            <li>Keep this key safe! You'll need it to use Fusion Studio</li>
+        </ol>
+        <p><strong>Note:</strong> OpenRouter requires credits to use. Make sure your account has a balance before making API calls.</p>
+        
+        <hr>
+        
+        <h3>Setting Your API Key</h3>
+        <ol>
+            <li>Open Fusion Studio in your browser</li>
+            <li>Click the <strong>Add API Key</strong> button (located in the top header, to the right of the model selector)</li>
+            <li>Paste your OpenRouter API key into the prompt</li>
+            <li>Click <strong>OK</strong> or press Enter</li>
+        </ol>
+        <p>Your API key is saved locally in your browser and will persist between sessions. The button will change to <strong>Clear API Key</strong> once a key is set.</p>
+        <p><strong>IMPORTANT:</strong> If your laptop is ever lost or stolen, IMMEDIATELY go to openrouter.ai and revoke your API key. You should also consider setting a spend limit as an extra layer of protection.</p>
+        
+        <img src="images/image.png" alt="API Key Setup">
+        
+        <hr>
+        
+        <h3>Using the Assistant Chat</h3>
+        <p>Fusion Studio includes a built-in <strong>Assistant</strong> that runs locally in your browser using the Phi-3-mini model. This means you can use it without an API key!</p>
+        
+        <p><strong>To access the Assistant:</strong></p>
+        <ol>
+            <li>Look at the <strong>left panel</strong> at the very top</li>
+            <li>Click the <strong>💬 Assistant</strong> button</li>
+            <li>Start asking questions about how to use Fusion Studio</li>
+        </ol>
+        
+        <p>The Assistant is perfect for:</p>
+        <ul>
+            <li>Learning how Fusion Studio works</li>
+            <li>Getting help with features</li>
+            <li>Understanding API keys and chat interfaces</li>
+            <li>No API key required!</li>
+        </ul>
+        
+        <hr>
+        
+        <h3>Starting a Thread</h3>
+        <p>Fusion Studio gives you <strong>10 chat slots</strong> so you can run multiple conversations at once.</p>
+        
+        <p><strong>To start a new thread:</strong></p>
+        <ol>
+            <li>Look at the <strong>left panel</strong> with numbered slots (1–10)</li>
+            <li>Click any slot that says <strong>"Empty..."</strong></li>
+            <li>A prompt will appear asking you to <strong>name your chat</strong></li>
+            <li>Type a name and click <strong>OK</strong></li>
+            <li>The slot will now show your chat name</li>
+        </ol>
+        
+        <p><strong>To switch between threads:</strong></p>
+        <ul>
+            <li>Click any chat slot to switch to that conversation</li>
+            <li>The active chat name appears at the top of the screen</li>
+        </ul>
+        
+        <p><strong>To manage a thread:</strong></p>
+        <ul>
+            <li><strong>Right-click</strong> on any chat slot to open the context menu</li>
+            <li>Choose from:
+                <ul>
+                    <li><strong>Rename</strong> – Change the chat name</li>
+                    <li><strong>Export Chat</strong> – Download the conversation as JSON</li>
+                    <li><strong>Clear Data</strong> – Delete all messages (keeps prompt, model, and JSON)</li>
+                </ul>
+            </li>
+        </ul>
+        
+        <hr>
+        
+        <h3>Setting and Saving a Prompt</h3>
+        <p>The <strong>right panel</strong> is your prompt area. This is where you load a system prompt that tells the AI how to behave.</p>
+        
+        <p><strong>To create or edit a prompt:</strong></p>
+        <ol>
+            <li>The prompt editor is visible in the right panel</li>
+            <li>Click the <strong>Edit</strong> button</li>
+            <li>Type your prompt directly in the text area, OR click <strong>Add File</strong> to load a <code>.md</code> (Markdown) file</li>
+            <li>Click <strong>Save</strong> when finished</li>
+        </ol>
+        
+        <p><strong>To edit an existing prompt:</strong></p>
+        <ul>
+            <li>Click the <strong>Edit</strong> button</li>
+            <li>Make your changes in the text area</li>
+            <li>Click <strong>Save</strong> to apply changes</li>
+        </ul>
+        
+        <p><strong>To load a prompt from a file:</strong></p>
+        <ul>
+            <li>Click <strong>Edit</strong>, then <strong>Add File</strong></li>
+            <li>Select a <code>.md</code> (Markdown) file from your computer</li>
+            <li>The file contents will appear in the prompt text area</li>
+            <li>Click <strong>Save</strong> to apply</li>
+        </ul>
+        
+        <p><strong>PLEASE NOTE:</strong> Prompt applies only to the current chat. You will need to re-upload or copy paste your prompt when starting another chat.</p>
+        
+        <p><strong>Why use prompts?</strong><br>
+        Prompts give the AI personality, instructions, or context. For example:</p>
+        <ul>
+            <li>"You are a helpful coding assistant."</li>
+            <li>"Answer all questions in pirate speak."</li>
+            <li>"You are an expert in JavaScript debugging."</li>
+        </ul>
+        
+        <hr>
+        
+        <h3>Adding a JSON File</h3>
+        <p>Fusion Studio lets you attach JSON files to your messages. This is useful for feeding data into the AI or working with structured information.</p>
+        
+        <p><strong>To add a JSON file:</strong></p>
+        <ol>
+            <li>Click the <strong>Add File</strong> button (located in the input footer, bottom-left)</li>
+            <li>Select a <code>.json</code> file from your computer</li>
+            <li>The filename will appear where it said "No file loaded"</li>
+            <li>The button will change to <strong>Remove File</strong></li>
+            <li>Type your message in the text area</li>
+            <li>Click <strong>Send</strong></li>
+        </ol>
+        
+        <p><strong>What happens:</strong></p>
+        <ul>
+            <li>The JSON file contents are included with your message</li>
+            <li>The AI can read and work with the data</li>
+            <li>The file stays loaded until you remove it or switch chats</li>
+        </ul>
+        
+        <p><strong>To remove a JSON file:</strong></p>
+        <ul>
+            <li>Click the <strong>Remove File</strong> button and confirm removal</li>
+        </ul>
+        
+        <hr>
+        
+        <h3>Managing Your Messages</h3>
+        <p>You can edit, regenerate, or delete any of your previous messages using the right-click context menu.</p>
+        
+        <p><strong>To access message options:</strong></p>
+        <ol>
+            <li><strong>Right-click</strong> on any of your messages (user bubbles in the chat)</li>
+            <li>Choose from:
+                <ul>
+                    <li><strong>Regenerate</strong> – Deletes this message and everything after it, then resends the message</li>
+                    <li><strong>Delete</strong> – Deletes this message and everything after it permanently</li>
+                    <li><strong>Edit</strong> – Deletes this message and everything after, and places the text in the input field for editing</li>
+                </ul>
+            </li>
+        </ol>
+        
+        <p><strong>Warning:</strong> All three options will delete the selected message and ALL messages that came after it. This cannot be undone!</p>
+        
+        <p><strong>Why use this?</strong></p>
+        <ul>
+            <li>Fix typos in past messages</li>
+            <li>Try different phrasings to get better responses</li>
+            <li>Remove unwanted conversation branches</li>
+            <li>Start fresh from any point in the conversation</li>
+        </ul>
+        
+        <hr>
+        
+        <h3>Exporting Thread Data</h3>
+        <p>You can export any chat thread as a JSON file to save your conversation history.</p>
+        
+        <p><strong>To export a thread:</strong></p>
+        <ol>
+            <li><strong>Right-click</strong> on the chat slot you want to export</li>
+            <li>Select <strong>Export Chat</strong> from the context menu</li>
+            <li>A JSON file will download to your computer</li>
+        </ol>
+        
+        <p><strong>What's in the export?</strong><br>
+        The JSON file contains:</p>
+        <ul>
+            <li>Chat name</li>
+            <li>Selected model</li>
+            <li>Full conversation history (all messages and responses)</li>
+            <li>Timestamp of export</li>
+        </ul>
+        
+        <p><strong>Why export?</strong></p>
+        <ul>
+            <li>Backup important conversations</li>
+            <li>Share conversations with others</li>
+            <li>Analyze chat data programmatically</li>
+            <li>Import into other tools</li>
+        </ul>
+        
+        <hr>
+        
+        <h2>Additional Features</h2>
+        
+        <h3>Model Selection</h3>
+        <p>Choose from multiple AI models using the dropdown at the top (next to the chat name):</p>
+        <ul>
+            <li><strong>🏠 Phi-3-mini (Local)</strong> – Runs in your browser, no API key needed!</li>
+            <li>DeepSeek models (with extended reasoning)</li>
+            <li>Qwen models</li>
+            <li>Inclusion AI models (Ling and Ring)</li>
+            <li>Moonshot AI models</li>
+            <li>Plus many more models from OpenRouter!</li>
+        </ul>
+        
+        <p><strong>How to use the model selector:</strong></p>
+        <ul>
+            <li>Click the dropdown to see all available models</li>
+            <li>OR start typing to search/filter models in real-time</li>
+            <li><strong>Pro tip:</strong> Type "free" (space) "other term" to filter only free models on OpenRouter</li>
+            <li>Use arrow keys to navigate, Enter to select</li>
+        </ul>
+        
+        <p><strong>Reasoning Display:</strong><br>
+        Models that support reasoning (like DeepSeek) will show their thinking process in a separate section above the main response. The thinking section is collapsible - it expands automatically as reasoning streams, then auto-collapses when the main response begins.</p>
+        
+        <p><strong>Markdown Formatting:</strong><br>
+        All AI responses support markdown formatting including <strong>bold</strong>, <em>italic</em>, <code>code blocks</code>, lists, and more. The formatting is rendered automatically in both responses and reasoning traces.</p>
+        
+        <h3>Clear All Data</h3>
+        <p>The <strong>Clear All</strong> button at the bottom of the left panel deletes all 10 chat threads at once, including all messages, prompts, and settings. Use with caution!</p>
+        
+        <hr>
+        
+        <h2>Tips & Tricks</h2>
+        <ul>
+            <li><strong>Start with the Assistant:</strong> New to Fusion Studio? Click the <strong>💬 Assistant</strong> button at the top of the left panel</li>
+            <li><strong>Organize your chats:</strong> Use descriptive names like "Debug Session" or "Brainstorm Ideas"</li>
+            <li><strong>Save your prompts:</strong> Keep useful prompts in <code>.md</code> files for quick loading</li>
+            <li><strong>Try the local model:</strong> No API key? Use the <strong>🏠 Phi-3-mini (Local)</strong> model</li>
+            <li><strong>Export frequently:</strong> Back up important conversations before they get too long</li>
+        </ul>
+        
+        <hr>
+        
+        <h2>Troubleshooting</h2>
+        
+        <p><strong>API calls aren't working:</strong></p>
+        <ul>
+            <li>Make sure your API key is set correctly (click <strong>Add API Key</strong> in the top header)</li>
+            <li>Check that your OpenRouter account has credits</li>
+            <li>Verify you have internet connection</li>
+            <li>Try using the <strong>🏠 Phi-3-mini (Local)</strong> model instead (no API key needed)</li>
+        </ul>
+        
+        <p><strong>Chat slots aren't saving:</strong></p>
+        <ul>
+            <li>Make sure you're not in incognito/private browsing mode</li>
+            <li>Check if your browser allows local storage</li>
+        </ul>
+        
+        <p><strong>JSON file won't load:</strong></p>
+        <ul>
+            <li>Ensure the file is valid JSON (use a validator like jsonlint.com)</li>
+            <li>Make sure the file extension is <code>.json</code></li>
+        </ul>
+        
+        <hr>
+        
+        <h2>About Fusion Studio</h2>
+        <p>Fusion Studio is a browser-based chat client built for power users who need:</p>
+        <ul>
+            <li>Multiple parallel conversations</li>
+            <li>Custom system prompts</li>
+            <li>JSON data integration</li>
+            <li>Full conversation exports</li>
+            <li>Local AI models (no API key required for Phi-3-mini)</li>
+        </ul>
+        <p>Built with vanilla HTML, CSS, and JavaScript. No frameworks, no bloat.</p>
+        
+        <hr>
+        
+        <p>Enjoy chatting! 🚀</p>
+    </div>
+</body>
+</html>
+

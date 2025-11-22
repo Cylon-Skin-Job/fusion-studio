@@ -1,0 +1,15 @@
+{
+  "_comment": "Configuration for docs-check.js - Fusion Studio vanilla project",
+  
+  "htmlFiles": ["index.html", "readme.html"],
+  "jsFiles": ["app.js"],
+  "cssFiles": ["style.css"],
+  
+  "enabledModules": {
+    "express": false,
+    "firebase": false,
+    "stateManagement": true,
+    "todoSystem": false
+  }
+}
+

@@ -223,6 +223,12 @@ A: Everything! 10 chat threads, custom prompts, JSON attachments, model selectio
 **Q: Where's the code?**  
 A: Single-file architecture: `app.js` (all logic), `style.css` (all styles), `index.html` (structure). No build step, no modules.
 
+**Q: Where can I find coding standards and validation rules?**  
+A: Check `.cursor/rules/` directory:
+- `03-javascript-naming.mdc` - Naming conventions (camelCase, kebab-case)
+- `04-contract-annotations.mdc` - How to document function contracts
+- `05-whitelist-system.mdc` - How to handle validation exceptions (load manually when needed)
+
 ---
 
 **TL;DR:** Privacy-first AI chat interface for prompt experimentation. Pure vanilla HTML/CSS/JS, no backend, no tracking. Uses OpenRouter API with user-provided keys. 100% client-side state in localStorage. Deployed on Firebase Hosting with 27-subdomain setup (270 total threads). RC is learning frontend, prefers plain English and surfer vibes.

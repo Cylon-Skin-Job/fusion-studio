@@ -1,0 +1,457 @@
+---
+globs: ["**/*.js", "**/*.mjs"]
+alwaysApply: false
+---
+
+# JavaScript Contract Annotations
+
+**Philosophy:** Document your contracts so validators can enforce correctness and AI assistants know your intent.
+
+---
+
+## 🎯 Why Contracts Matter
+
+**The Problem:** Functions have invisible contracts:
+- What do they return?
+- What errors do they throw?
+- Can parameters be null?
+- Do they mutate state?
+- Do they have side effects?
+
+**Without documentation**, an AI (or human) must read the entire function body to know these answers.
+
+**With contract annotations**, the contract is explicit and machine-validated.
+
+---
+
+## 📋 Contract Annotation Types
+
+### 1. `@returns` - Return Type Contract
+
+**When:** Any function that returns a value (not void)
+
+```javascript
+// ✅ CORRECT
+// @returns {string} User's full name
+function getUserName() {
+  return localStorage.getItem('username');
+}
+
+// @returns {Promise<object>} User data from API
+async function fetchUser(id) {
+  const res = await fetch(`/api/users/${id}`);
+  return res.json();
+}
+
+// @returns {number|null} User ID, or null if not logged in
+function getCurrentUserId() {
+  const id = localStorage.getItem('userId');
+  return id ? parseInt(id) : null;
+}
+
+// ✅ CORRECT - Void function (no @returns needed)
+function logMessage(msg) {
+  console.log(msg);
+}
+```
+
+**Common Return Types:**
+- `{string}` - String value
+- `{number}` - Number value
+- `{boolean}` - Boolean value
+- `{object}` - Plain object
+- `{Array}` or `{string[]}` - Array
+- `{Promise<type>}` - Async return
+- `{type|null}` - Can be null
+- `{type|undefined}` - Can be undefined
+- `{void}` - Returns nothing (usually omit `@returns`)
+
+---
+
+### 2. `@throws` - Error Contract
+
+**When:** Function can throw errors
+
+```javascript
+// ✅ CORRECT
+// @returns {object} Parsed JSON data
+// @throws {SyntaxError} If JSON is malformed
+// @throws {Error} If data is null
+function parseData(jsonString) {
+  if (!jsonString) {
+    throw new Error('Data cannot be null');
+  }
+  return JSON.parse(jsonString);  // Can throw SyntaxError
+}
+
+// ✅ CORRECT - Async functions that can reject
+// @returns {Promise<object>} User data
+// @throws {Error} If fetch fails or response is not OK
+async function fetchUser(id) {
+  const res = await fetch(`/api/users/${id}`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch user: ${res.status}`);
+  }
+  return res.json();
+}
+```
+
+**Why it matters:**
+- Callers know they need try/catch
+- Documents what errors to expect
+- AI won't write code that ignores errors
+
+---
+
+### 3. `@param` - Parameter Nullability Contract
+
+**When:** Parameter can be null/undefined (OPTIONAL parameters)
+
+```javascript
+// ✅ CORRECT - Required parameter (no annotation needed)
+function greet(name) {
+  return `Hello, ${name}!`;
+}
+
+// ✅ CORRECT - Optional parameter (needs annotation)
+// @param {string?} name - OPTIONAL, can be null/undefined
+// @returns {string} Greeting message
+function greet(name) {
+  return `Hello, ${name || 'stranger'}!`;
+}
+
+// ✅ CORRECT - Multiple parameters, some optional
+// @param {string?} title - OPTIONAL, can be null/undefined
+// @param {number?} age - OPTIONAL, can be null/undefined
+// @returns {object} User data object
+function createUser(username, title, age) {
+  return {
+    username,
+    title: title || 'User',
+    age: age || 0
+  };
+}
+```
+
+**The `?` suffix means:** "This parameter might be null or undefined"
+
+**Why it matters:**
+- Documents which params are required vs. optional
+- Prevents `Cannot read property of undefined` bugs
+- AI knows to add null checks
+
+---
+
+### 4. `@async-boundary` - Async Contract
+
+**When:** Function is async
+
+```javascript
+// ✅ CORRECT
+// @async-boundary
+// @returns {Promise<object>} User data
+async function fetchUser(id) {
+  const res = await fetch(`/api/users/${id}`);
+  return res.json();
+}
+
+// ✅ CORRECT - Marks where sync code calls async
+// @async-boundary Calls async fetchUser()
+// @returns {void}
+function loadUserData() {
+  fetchUser(123).then(user => {
+    console.log(user);
+  });
+}
+```
+
+**Why it matters:**
+- Marks boundaries between sync/async code
+- Documents where promises are created/consumed
+- Prevents forgetting `await`
+
+---
+
+### 5. `@side-effects` and `@pure` - Side Effect Contract
+
+**When:** Function has side effects (DOM, localStorage, fetch, console, timers, etc)
+
+```javascript
+// ✅ CORRECT - Document side effects
+// @side-effects
+// - DOM: Updates element.innerHTML
+// - Storage: Writes to localStorage
+// @returns {void}
+function saveAndDisplayMessage(msg) {
+  localStorage.setItem('lastMessage', msg);
+  document.getElementById('message').innerHTML = msg;
+}
+
+// ✅ CORRECT - Pure function
+// @pure true
+// @returns {number} Sum of a and b
+function add(a, b) {
+  return a + b;
+}
+
+// ✅ CORRECT - No side effects, implicitly pure
+// @returns {string} Uppercase version of input
+function toUpper(str) {
+  return str.toUpperCase();
+}
+```
+
+**Common Side Effects:**
+- **DOM:** Modifies document (innerHTML, classList, appendChild)
+- **Storage:** localStorage/sessionStorage writes
+- **Network:** fetch, XHR
+- **Console:** console.log/warn/error
+- **Timer:** setTimeout, setInterval
+- **Events:** addEventListener
+
+**Why it matters:**
+- Pure functions are testable and predictable
+- Side effects need cleanup (removeEventListener, clearTimeout)
+- Documents dependencies on external state
+
+---
+
+### 6. `@mutates-state` - State Mutation Contract
+
+**When:** Function mutates global/module state
+
+```javascript
+// Global state
+let currentUser = null;
+
+// ✅ CORRECT
+// @mutates-state
+// - currentUser (global variable)
+// @returns {void}
+function setCurrentUser(user) {
+  currentUser = user;
+}
+
+// ✅ CORRECT
+// @mutates-state
+// - DOM: element.textContent
+// - localStorage.setItem
+// @returns {void}
+function updateChatName(name) {
+  chatHistory[activeChatSlot].name = name;
+  localStorage.setItem('chats', JSON.stringify(chatHistory));
+  document.getElementById('chat-name').textContent = name;
+}
+```
+
+**Why it matters:**
+- Documents which global state changes
+- Prevents accidental mutations
+- Makes debugging state changes easier
+
+---
+
+### 7. `@requires-functions` and `@requires-globals` - Dependency Contract
+
+**When:** Function calls other functions or uses global variables
+
+```javascript
+// ✅ CORRECT
+// @requires-functions
+// - fetchUser()
+// - saveToCache()
+// @requires-globals
+// - localStorage
+// - console
+// @returns {Promise<object>} User data
+async function loadUser(id) {
+  console.log(`Loading user ${id}`);
+  const user = await fetchUser(id);
+  saveToCache(user);
+  localStorage.setItem('lastUser', JSON.stringify(user));
+  return user;
+}
+```
+
+**Why it matters:**
+- Documents dependencies
+- Makes refactoring safer
+- Shows what needs to be mocked in tests
+
+---
+
+## 🔧 How Validators Enforce Contracts
+
+### What Gets Validated
+
+1. **Missing `@returns`:** Functions with return statements need `@returns`
+2. **Missing `@throws`:** Functions with throw statements need `@throws`
+3. **Missing `@param?`:** Parameters that can be null need `?` marker
+4. **Missing `@async-boundary`:** Async functions need boundary annotation
+5. **Missing `@side-effects`:** Functions with side effects need documentation
+6. **Missing `@mutates-state`:** Functions that mutate state need documentation
+7. **Missing `@requires-*`:** Functions with dependencies need documentation
+
+### When Validation Runs
+
+Run `node scripts/docs-check.js` to validate all contracts.
+
+**Validators will FAIL if:**
+- Function returns value but lacks `@returns`
+- Function throws but lacks `@throws`
+- Function has side effects but lacks `@side-effects`
+- Function mutates state but lacks `@mutates-state`
+- Async function lacks `@async-boundary`
+
+### ⚠️ Critical: The 15-Line Search Window
+
+**Validators search 15 lines BEFORE the function declaration for annotations.**
+
+If your annotation block exceeds 15 lines, validators won't find them!
+
+**❌ BAD - Too many lines (won't be detected):**
+```javascript
+// @async-boundary
+// @returns {Promise<void>}
+// @side-effects
+// - Network: fetch() call
+// - DOM: Modifies innerHTML
+// - Console: Logging
+// @pure false
+// @requires-functions
+// - fetch()
+// - Error()
+// - isArray()
+// - filter()
+// - includes()
+// - map()
+// - parseFloat()
+// - populateDropdown()
+// - getElementById()
+// @requires-globals
+// - document
+// - console
+// - fetch
+async function initModelList() {  // Line 20+ from first annotation!
+```
+
+**✅ GOOD - Compact format (will be detected):**
+```javascript
+// @async-boundary
+// @returns {Promise<void>}
+// @side-effects - Network: fetch() call, DOM: Modifies innerHTML, Console: Logging
+// @pure false
+// @requires-functions - fetch(), Error(), isArray(), filter(), includes(), map(), parseFloat(), populateDropdown(), getElementById()
+// @requires-globals - document, console, fetch
+async function initModelList() {  // Only 6 lines from first annotation
+```
+
+**Pro Tips:**
+- Put annotations on single lines when possible (comma-separated)
+- Keep most critical annotations closest to function (within 15 lines)
+- For long dependency lists, use compact comma-separated format
+- Order matters: put `@side-effects` and `@mutates-state` close to function
+
+---
+
+## 📝 Complete Example
+
+**Verbose format (readable but can exceed 15 lines):**
+```javascript
+// @async-boundary
+// @requires-functions
+// - fetchFromAPI()
+// - updateCache()
+// @requires-globals
+// - localStorage
+// - console
+// @param {string?} cacheBuster - OPTIONAL, can be null/undefined
+// @returns {Promise<object>} User profile data
+// @throws {Error} If API call fails
+// @side-effects
+// - Network: Calls fetchFromAPI()
+// - Storage: Writes to localStorage
+// - Console: Logs errors
+// @mutates-state
+// - localStorage.setItem
+async function getUserProfile(userId, cacheBuster) {
+  // ... implementation
+}
+```
+
+**Compact format (recommended for functions with many annotations):**
+```javascript
+// @async-boundary
+// @param {string?} cacheBuster - OPTIONAL, can be null/undefined
+// @returns {Promise<object>} User profile data
+// @throws {Error} If API call fails
+// @side-effects - Network: Calls fetchFromAPI(), Storage: Writes to localStorage, Console: Logs errors
+// @mutates-state - localStorage.setItem
+// @requires-functions - fetchFromAPI(), updateCache()
+// @requires-globals - localStorage, console
+async function getUserProfile(userId, cacheBuster) {
+  try {
+    const url = cacheBuster 
+      ? `/api/users/${userId}?cb=${cacheBuster}`
+      : `/api/users/${userId}`;
+    
+    const data = await fetchFromAPI(url);
+    updateCache(userId, data);
+    localStorage.setItem('lastProfile', JSON.stringify(data));
+    return data;
+  } catch (err) {
+    console.error('Failed to load profile:', err);
+    throw new Error(`Profile load failed: ${err.message}`);
+  }
+}
+```
+
+**Choose format based on:**
+- **Verbose:** Better readability, use when < 15 total annotation lines
+- **Compact:** Better validator compatibility, use when many dependencies or long lists
+
+---
+
+## 🎯 Quick Reference
+
+| Annotation | When to Use | Example |
+|------------|-------------|---------|
+| `@returns {type}` | Function returns value | `@returns {string} User name` |
+| `@returns {Promise<type>}` | Async function | `@returns {Promise<object>} User data` |
+| `@returns {type\|null}` | Can return null | `@returns {number\|null} User ID or null` |
+| `@throws {ErrorType}` | Can throw error | `@throws {Error} If validation fails` |
+| `@param {type?} name` | Optional parameter | `@param {string?} title - OPTIONAL` |
+| `@async-boundary` | Async function | `@async-boundary` |
+| `@side-effects` | Has side effects | `@side-effects\n- DOM: Updates innerHTML` |
+| `@pure true` | No side effects | `@pure true` |
+| `@mutates-state` | Mutates global state | `@mutates-state\n- currentUser (global)` |
+| `@requires-functions` | Calls other functions | `@requires-functions\n- fetchData()` |
+| `@requires-globals` | Uses globals | `@requires-globals\n- localStorage` |
+
+---
+
+## ✅ Before Committing Code
+
+- [ ] All non-void functions have `@returns`
+- [ ] Functions that throw have `@throws`
+- [ ] Optional parameters marked with `?`
+- [ ] Async functions have `@async-boundary`
+- [ ] Side effects documented with `@side-effects`
+- [ ] State mutations documented with `@mutates-state`
+- [ ] Function dependencies documented
+- [ ] Ran `node scripts/docs-check.js` and all checks passed
+
+---
+
+## 🔗 Related Systems
+
+### Validation Whitelist
+
+If you have legacy code or technical debt that intentionally breaks validation rules, see:
+- **`.cursor/rules/05-whitelist-system.mdc`** - How to track known violations with drift detection
+
+The whitelist system lets you acknowledge violations you're deferring while detecting if the code changes later.
+
+---
+
+**Remember:** Contracts are enforced by validators. If validation fails, fix the contracts, don't disable the validators!
